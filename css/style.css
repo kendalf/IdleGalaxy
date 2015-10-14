@@ -1,0 +1,165 @@
+body {
+  background-color: #101510;
+  color:#eee;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+.progress {
+  background-color:#333;
+  margin:5px;
+  position: relative;
+}
+.progress span {
+  position: absolute;
+  display: block;
+  width: 100%;
+  color: white;
+ }
+button {
+  margin: 5px;
+  padding: 2px;
+}
+button:focus {
+  outline:0 !important;
+  border: 1px solid #555 !important;
+}
+
+.btn-disabled, .btn-disabled:hover {
+  color:#aaa;
+  background-color:#333;
+}
+
+.redText {
+  font-style: italic;
+  color: #f77 !important;
+}
+
+.structInfo {
+  border:padding-bottom:5px;
+  display: inline-block;
+  width:49%;
+  position:float;
+  float:left;
+  font-weight:bold;
+  font-size:11px;
+}
+.buy-sell-btn {
+  float:left;
+  width:45%;
+  display:inline;
+  font-weight:bold;
+}
+
+.structContainer {
+  clear:both;
+  border:1px solid #333;
+  padding-bottom:5px;
+  margin:5px 0 5px 0;
+  border-radius:10px;
+  overflow: auto;
+}
+
+.structContainer h5 {
+  font-style: italic;
+  color:#999;
+}
+
+.odd {
+  background-color: #222;
+}
+
+.village {
+  border: 1px solid #333;
+  border-radius: 10px;
+}
+
+#messages p {
+  border-radius: 10px;
+  margin:0;
+  padding:5px;
+  font-style:italic;
+  color:#999;
+  width:100%;
+}
+
+h3 {
+  clear:both;
+}
+
+#messages {
+  height:500px;
+  overflow : auto;
+  text-align: left;
+}
+
+#messages .glyphicon {
+  color: green;
+}
+
+#messages p:hover {
+  background-color:#313139;
+}
+
+.unread {
+  font-weight:bold !important;
+  font-style:normal !important;
+}
+
+.structInfo button {
+  width:95%;
+}
+
+.structInfoExpand {
+  border:1px solid #333;
+  border-radius: 10px;
+  padding-bottom:5px;
+  display: inline;
+}
+
+.disabled {
+  cursor: default !important;
+  font-style: italic;
+}
+
+.gather {
+  width: 130px;
+}
+
+@keyframes click {
+    0%   {opacity: 1; top:-30px;}
+    100% {opacity: 0; top:-80px;}
+}
+
+.clicks {
+  z-index: 99;
+  pointer-events: none;
+  opacity: 0;
+  font-size: 18px;
+  font-weight: bold;
+  position: absolute;
+  animation-name: click;
+  animation-duration: 2s;
+}
+
+.tooltip {
+  position: fixed;
+}
+.tooltip-inner{
+    color:#999;
+    font-style: italic;
+    font-weight: normal;
+    text-align:center;
+    background-color:#222;
+}
+.tooltip.bottom .tooltip-arrow {
+  border-bottom-color: #222;
+}
+
+.tooltip.top .tooltip-arrow{ border-top-color: #222; }
+.tooltip.left .tooltip-arrow{ border-left-color: #222; }
+.tooltip.bottom .tooltip-arrow{ border-bottom-color: #222; }
+.tooltip.right .tooltip-arrow{ border-right-color: #222; }

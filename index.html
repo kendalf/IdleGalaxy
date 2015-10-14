@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="IdleGalaxy">
+<head>
+  <title>Idle Galaxy</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular.min.js"></script>
+  <script src="js/howler.min.js"></script>
+
+  <script src="js/structure.js"></script>
+  <script src="js/resourceObj.js"></script>
+  <script src="js/messages.js"></script>
+  <script src="js/gameinitValues.js"></script>
+  <script src="js/main.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body ng-controller="GameController">
+  <nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">IdleGalaxy</a>
+      </div>
+      <div style="float:right;font-weight:bold;">
+        <a href="#" ng-Click="muteToggle()"> {{ muteState }} </a>
+        <a href="#" ng-Click="saveGame(true)"> Save </a>
+        <a href="#" ng-Click="resetGame()"> Reset </a>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-12" style="background-color:#222;border-radius:10px;padding-bottom:5px;">
+        <button type="button" class="btn btn-success btn-lg gather" ng-click="gatherRsrc('Wood', 'Lumberjack')" ng-if="upgrades['Stone Tools'].owned < 1">Gather Wood</button>
+        <button type="button" class="btn btn-success btn-lg gather" ng-click="gatherRsrc('Wood', 'Lumberjack')" ng-if="upgrades['Stone Tools'].owned > 0">Chop Wood</button>
+        <span class="Wood"></span>
+
+        <button type="button" class="btn btn-success btn-lg gather" ng-click="gatherRsrc('Food', 'Farmer')" ng-if="upgrades['Agriculture'].owned">Farm</button>
+        <div style="position:relative;display:inline">
+          <span class="Food" style="position:absolute;left:-140px;width:400px;"></span>
+        </div>
+
+        <button type="button" class="btn btn-success btn-lg gather" ng-click="gatherRsrc('Minerals', 'Miner')" ng-if="upgrades['Stone Tools'].owned > 0">Mine</button>
+        <div style="position:relative;display:inline">
+          <span class="Minerals" style="position:absolute;left:-140px;width:400px;"></span>
+        </div>
+
+        <button type="button" class="btn btn-success btn-lg gather" ng-click="hunt()" ng-if="upgrades['Wood Spear'].owned == 1 && !huntTimer.started">Hunt</button>
+        <button type="button" class="btn btn-success btn-lg disabled gather" ng-if="huntTimer.started">Hunt ({{ (huntTimer.current/1000).toFixed(0) }})</button>
+        <span class="info" style="float:right">Day: {{ getDay(seasonTimer) }} {{ seasons[seasonTimer.season] }} Year: {{ seasonTimer.year }}</span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-4">
+        <h3>Resources:</h3>
+        <div class="progress" ng-repeat="key in objectKeys(resources)" ng-if="resources[key].max > 0">
+          <div class="progress-bar progress-bar-striped" role="progressbar" style="width:{{ resources[key].getPercent() }}%; background-color:{{ resources[key].barColor() }};">
+          </div>
+          <span style="font-weight:bold;" ng-init="dec = 0" ng-mouseover="dec = 2" ng-mouseleave="dec = 0" >{{ resources[key].display(dec) }}</span>
+          <span style="font-weight:bold;left:70%" ng-if="resources[key].perTick != 0">{{ resources[key].displayPerSec(fps) }}</span>
+        </div>
+
+        <div class="text-center village" ng-if="occupations['total'].amt > 0">
+          <h3 style="clear:both;">Village Population: {{ occupations['total'].amt }} / {{ structures['Hut'].owned }}</h3>
+          <p>Freeloaders: {{ occupations['Freeloader'].amt }}</p>
+
+          <div ng-repeat="job in objectKeys(occupations)" ng-if="occupations[job].max != 0 && job != 'total' && job != 'Freeloader'">
+            <a style="font-size:26px;" ng-click="unassignJob(job)"><span class="glyphicon glyphicon-minus-sign"> </span></a>
+            <span style="display: inline-block; width:40%">{{ job }}: {{ occupations[job].amt }} / {{ occupations[job].max }}</span>
+            <a style="right:30%;font-size:26px" ng-click="assignJob(job)"><span class="glyphicon glyphicon-plus-sign"> </span></a>
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="col-sm-4 text-center">
+
+        <div class="structContainer">
+          <h3>Build Structures:</h3>
+          <div class="structInfo" ng-repeat="key in objectKeys(structures)" id="{{ structures[key].id }}-container" ng-if="structures[key].owned >= 0">
+            <button type="button" ng-Click="structures[key].toggleInfo()" class="btn btn-primary btn-md" ng-class="{disabled: !structures[key].canBuy(resources), redText: structures[key].canNotBuy(resources)}">{{ key }} <span ng-if="structures[key].owned > 0"> ({{ structures[key].owned }})</span></button>
+            <div id="{{ structures[key].id }}" class="hide">
+              <h5>{{ structures[key].description }}</h5>
+              <div class="progress" style="height:15px;" ng-repeat="resrcKey in objectKeys(structures[key].rsrcReq)">
+                <div class="progress-bar progress-bar-striped" role="progressbar" style="width:{{ structures[key].getPercent(resrcKey, resources[resrcKey].amt) }}%; background-color:{{ structures[key].barColor(resrcKey, resources[resrcKey]) }};"></div>
+                <span>{{ resrcKey }}: {{ structures[key].displayInfo(resrcKey, resources[resrcKey].amt) }}</span>
+              </div>
+              <button type="button" style="width:45%;display:inline;font-weight:bold;padding:5px;margin:2px 0 0 2px;" class="btn btn-success btn-sm" ng-class="{disabled: !structures[key].canBuy(resources)}" ng-click="structures[key].buy(resources)">Build</button>
+              <button type="button" style="width:45%;display:inline;font-weight:bold;padding:5px;margin:2px 2px 0 0;" class="btn btn-warning btn-sm" ng-class="{disabled: structures[key].owned < 1}" ng-click="structures[key].destroy(resources)" data-toggle="tooltip" title="Get back 50% of resources spent">Destroy</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="structContainer">
+          <h3>Upgrades:</h3>
+          <div class="structInfo" ng-repeat="key in objectKeys(upgrades)" id="{{ upgrades[key].id }}-container" ng-if="upgrades[key].owned == 0">
+            <button type="button" ng-Click="upgrades[key].toggleInfo()" class="btn btn-primary btn-md" ng-class="{disabled: !upgrades[key].canBuy(resources), redText: structures[key].canNotBuy(resources)}">{{ key }}</button>
+            <div id="{{ upgrades[key].id }}" class="hide">
+              <h5>{{ upgrades[key].description }}</h5>
+              <div class="progress" style="height:15px;" ng-repeat="resrcKey in objectKeys(upgrades[key].rsrcReq)">
+                <div class="progress-bar progress-bar-striped" role="progressbar" style="width:{{ upgrades[key].getPercent(resrcKey, resources[resrcKey].amt) }}%; background-color:{{ upgrades[key].barColor(resrcKey, resources[resrcKey]) }};"></div>
+                <span>{{ resrcKey }}: {{ upgrades[key].displayInfo(resrcKey, resources[resrcKey].amt) }}</span>
+              </div>
+              <button type="button" class="btn btn-success btn-sm" ng-class="{disabled: !upgrades[key].canBuy(resources)}" ng-click="upgrades[key].buy(resources)">Buy</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="col-sm-4 text-center" ">
+
+        <h3>Message Log ( {{ getUnread() }} )</h3>
+        <div id="messages">
+          <p ng-mouseover="item.read = true" ng-repeat="item in msgLog track by $index"
+             ng-class="{'unread': !item.read}" ng-class-odd="'odd'" data-toggle="tooltip" data-original-title="{{item.time}}">
+            <span class="glyphicon glyphicon-exclamation-sign" ng-if="!item.read"> </span> {{ item.msg }}
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>
